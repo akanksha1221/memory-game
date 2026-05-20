@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="cosmos">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="An educational Memory Card Game featuring customizable themes, arcade synth sounds, competitive AI, and a live code state visualizer panel.">
+  <title>Cyber Memory Duel &bull; Educational State Machine</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Game Header -->
+  <header>
+    <div class="logo-container">
+      <h1><span>{ }</span> CyberMemory</h1>
+    </div>
+    
+    <div class="header-controls">
+      <!-- Theme Selection Dropdown -->
+      <select id="themeSelector" class="theme-select" aria-label="Select Game Theme">
+        <option value="cosmos">🪐 Cosmos Cyber</option>
+        <option value="retro">🎮 Retro Arcade</option>
+        <option value="runes">🔮 Mystical Runes</option>
+      </select>
+      
+      <!-- Audio Toggle Button -->
+      <button id="muteBtn" class="btn btn-icon" title="Toggle Sound Synth" aria-label="Toggle sound synth">
+        🔊
+      </button>
+
+      <!-- Reset Game Button -->
+      <button id="resetHeaderBtn" class="btn btn-outline" style="padding: 0.5rem 1rem;">
+        Reset
+      </button>
+    </div>
+  </header>
+
+  <!-- Application Main Workspace -->
+  <div class="app-container">
+    
+    <!-- Left/Center Playable Game Area -->
+    <main class="game-zone">
+      
+      <!-- Dashboard stats tracker bar -->
+      <section class="dashboard-bar" aria-label="Game Statistics">
+        <div class="stat-box">
+          <span class="stat-label">Game Mode</span>
+          <span id="statMode" class="stat-value">Classic</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-label">Timer</span>
+          <span id="statTimer" class="stat-value">00:00</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-label">Moves</span>
+          <span id="statMoves" class="stat-value">0</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-label">Matches</span>
+          <span id="statMatches" class="stat-value">0/8</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-label">Accuracy</span>
+          <span id="statAccuracy" class="stat-value">0%</span>
+        </div>
+      </section>
+
+      <!-- Main Dynamic Card Grid -->
+      <div class="board-container">
+        <div id="gameBoard" class="game-board grid-4x4" aria-label="Memory Card Grid">
+          <!-- Cards injected via JavaScript -->
+        </div>
+      </div>
+
+    </main>
+
+    <!-- Right-aligned Educational Code Inspector Sidebar -->
+    <aside id="inspectorSidebar" class="inspector-sidebar" aria-label="Live Code Inspector">
+      <div class="inspector-header">
+        <div class="inspector-title">
+          <span>&lt;/&gt;</span> code_inspector.js
+        </div>
+        <button id="closeInspectorBtn" class="btn btn-icon" style="padding: 0.2rem; font-size: 0.8rem;" aria-label="Close Code Inspector">
+          &times;
+        </button>
+      </div>
+
+      <div class="inspector-body">
+        
+        <!-- Live JS State Visualizer Section -->
+        <div class="inspector-section">
+          <div class="section-title">Reactive Game State</div>
+          <pre id="stateViewer" class="state-viewer"><span class="code-null">null</span></pre>
+        </div>
+
+        <!-- Timer & Intervals Thread Visualizer Section -->
+        <div class="inspector-section">
+          <div class="section-title">Active Timers & Threads</div>
+          <div class="timer-pulse-container">
+            <div id="pulseRing" class="pulse-ring"></div>
+            <div class="timer-details">
+              Thread: <span id="activeTimerName">Idle</span><br>
+              Interval: <span id="activeTimerDuration">0ms</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Scrollable Event Listener Logger -->
+        <div class="inspector-section" style="flex: 1; display: flex; flex-direction: column;">
+          <div class="section-title">Captured DOM Events</div>
+          <div id="eventLogger" class="event-logger" aria-live="polite">
+            <div class="log-entry" style="color: var(--color-text-muted); font-style: italic;">
+              Waiting for actions... click a card to capture events!
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </aside>
+
+  </div>
+
+  <!-- Floating Toggle Button for Mobile Displays -->
+  <button id="fabToggleInspector" class="fab-toggle-inspector" title="Toggle Code Inspector" aria-label="Toggle Code Inspector">
+    &lt;/&gt;
+  </button>
+
+  <!-- Setup Options Start Screen Modal Overlay -->
+  <div id="startModal" class="overlay-modal">
+    <div class="modal-content">
+      <h2 class="modal-title">Cyber Memory Duel</h2>
+      <p class="modal-desc">Test your memory limits and explore modern JavaScript event loops, state machines, and synchronized DOM rendering!</p>
+      
+      <!-- Theme Config Option -->
+      <div class="config-group">
+        <span class="config-label">Card Theme</span>
+        <div class="config-options">
+          <button class="config-btn active" data-config-type="theme" data-value="cosmos">🪐 Cosmos Cyber</button>
+          <button class="config-btn" data-config-type="theme" data-value="retro">🎮 Retro Arcade</button>
+          <button class="config-btn" data-config-type="theme" data-value="runes">🔮 Mystical Runes</button>
+        </div>
+      </div>
+
+      <!-- Game Mode Config Option -->
+      <div class="config-group">
+        <span class="config-label">Game Mode</span>
+        <div class="config-options">
+          <button class="config-btn active" id="modeClassicBtn" data-config-type="mode" data-value="classic">Classic</button>
+          <button class="config-btn" id="modeTimeAttackBtn" data-config-type="mode" data-value="timeAttack">Time Attack</button>
+          <button class="config-btn" id="modeVsAiBtn" data-config-type="mode" data-value="vsAI">VS AI Duel</button>
+        </div>
+      </div>
+
+      <!-- Grid Size Config Option -->
+      <div class="config-group">
+        <span class="config-label">Grid Size (Complexity)</span>
+        <div class="config-options">
+          <button class="config-btn active" data-config-type="grid" data-value="4x4">4 &times; 4 (16 Cards)</button>
+          <button class="config-btn" data-config-type="grid" data-value="4x5">4 &times; 5 (20 Cards)</button>
+          <button class="config-btn" data-config-type="grid" data-value="6x6">6 &times; 6 (36 Cards)</button>
+        </div>
+      </div>
+
+      <!-- AI Difficulty (Hidden unless VS AI mode selected) -->
+      <div class="config-group hidden" id="aiConfigGroup" style="display: none;">
+        <span class="config-label">Opponent AI Core Memory</span>
+        <div class="config-options">
+          <button class="config-btn active" data-config-type="ai" data-value="easy">Easy (Forgetful)</button>
+          <button class="config-btn" data-config-type="ai" data-value="medium">Medium (Human-like)</button>
+          <button class="config-btn" data-config-type="ai" data-value="hard">Hard (Cybernetic)</button>
+        </div>
+      </div>
+
+      <button id="startGameBtn" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 0.9rem; font-size: 1.1rem; margin-top: 1rem;">
+        Initialize State Machine
+      </button>
+    </div>
+  </div>
+
+  <!-- End Game Status Screen Modal Overlay -->
+  <div id="endModal" class="overlay-modal hidden">
+    <div class="modal-content">
+      <h2 id="endTitle" class="modal-title">Victory Achieved!</h2>
+      <p id="endDesc" class="modal-desc">The state space has been fully matched successfully.</p>
+      
+      <div class="stats-grid">
+        <div class="stat-item">
+          <div class="stat-item-label">Elapsed Time</div>
+          <div id="endStatTime" class="stat-item-value">00:00</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-item-label">Moves Taken</div>
+          <div id="endStatMoves" class="stat-item-value">0</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-item-label">Accuracy Rate</div>
+          <div id="endStatAccuracy" class="stat-item-value">0%</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-item-label">Winner</div>
+          <div id="endStatWinner" class="stat-item-value">Player</div>
+        </div>
+      </div>
+
+      <button id="restartBtn" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 0.9rem; font-size: 1.1rem;">
+        Re-Initialize Sandbox
+      </button>
+    </div>
+  </div>
+
+  <!-- Educational JS Hooks -->
+  <script type="module" src="game.js"></script>
+
+</body>
+</html>

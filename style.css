@@ -281,6 +281,7 @@ select.theme-select option {
   gap: 10px;
   perspective: 1200px; /* Crucial for 3D card flips */
   margin: auto;
+  touch-action: manipulation;
   transition: width 0.15s ease-out, height 0.15s ease-out;
 }
 
@@ -291,11 +292,14 @@ select.theme-select option {
 
 /* --- 3D Flip Card Component --- */
 .card {
+  width: 100%;
+  height: 100%;
   aspect-ratio: 4 / 5;
   cursor: pointer;
   position: relative;
   border-radius: 12px;
   user-select: none;
+  touch-action: manipulation;
   transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   container-type: size; /* Unlock Container Query units (cqw, cqh) for child scaling */
 }
@@ -600,7 +604,7 @@ select.theme-select option {
   border-radius: 50%;
   background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
   box-shadow: 0 4px 15px rgba(0, 255, 255, 0.4);
-  display: flex;
+  display: none; /* Default hidden on desktop styles */
   align-items: center;
   justify-content: center;
   color: #fff;
@@ -622,10 +626,12 @@ select.theme-select option {
   backdrop-filter: blur(12px);
   z-index: 1000;
   display: flex;
-  align-items: center;
+  align-items: flex-start; /* top aligned for mobile scrolls */
   justify-content: center;
   padding: 1.5rem;
+  overflow-y: auto; /* enable modal scrolling */
   transition: opacity 0.3s ease;
+  -webkit-overflow-scrolling: touch;
 }
 
 .overlay-modal.hidden {
@@ -644,6 +650,7 @@ select.theme-select option {
   position: relative;
   text-align: center;
   animation: zoomIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  margin: auto; /* automatic centering */
 }
 
 .modal-title {
@@ -740,6 +747,10 @@ select.theme-select option {
 
 /* --- Responsive Adaptations --- */
 @media (max-width: 992px) {
+  .fab-toggle-inspector {
+    display: flex; /* Show toggle FAB on smaller viewports */
+  }
+
   .inspector-sidebar {
     position: fixed;
     top: 0;
@@ -762,36 +773,108 @@ select.theme-select option {
 
 @media (max-width: 576px) {
   header {
-    padding: 1rem;
+    padding: 0.5rem 0.8rem;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
   }
   
   .logo-container h1 {
-    font-size: 1.3rem;
-  }
-
-  .game-zone {
-    padding: 1rem;
-  }
-
-  .dashboard-bar {
-    padding: 0.75rem 1rem;
-    border-radius: 12px;
-  }
-
-  .stat-value {
     font-size: 1.1rem;
   }
 
+  .logo-container span {
+    display: none; /* Hide standard brackets on small viewports to save space */
+  }
+
+  .header-controls {
+    gap: 0.5rem;
+  }
+
+  select.theme-select {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.8rem;
+    max-width: 105px;
+  }
+
+  .btn-outline {
+    padding: 0.3rem 0.6rem !important;
+    font-size: 0.8rem;
+  }
+
+  .btn-icon {
+    padding: 0.4rem;
+    font-size: 0.8rem;
+  }
+
+  .game-zone {
+    padding: 0.5rem;
+  }
+
+  .dashboard-bar {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0.3rem;
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+    border-radius: 12px;
+  }
+
+  .stat-box {
+    min-width: 0;
+  }
+
+  .stat-label {
+    font-size: 0.52rem;
+    letter-spacing: 0.01em;
+    margin-bottom: 0.1rem;
+  }
+
+  .stat-value {
+    font-size: 0.9rem;
+  }
+
   .modal-content {
-    padding: 1.5rem;
+    padding: 1.5rem 1.2rem;
   }
 
   .modal-title {
-    font-size: 1.8rem;
+    font-size: 1.7rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .modal-desc {
+    margin-bottom: 1.2rem;
+    font-size: 0.85rem;
+  }
+
+  .config-group {
+    margin-bottom: 1rem;
+    gap: 0.4rem;
   }
 
   .config-options {
-    flex-direction: column;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .config-btn {
+    padding: 0.55rem 0.4rem;
+    font-size: 0.75rem;
+    flex: 1 1 calc(33.333% - 0.4rem);
+    min-width: 75px;
+    text-align: center;
+    border-radius: 8px;
+  }
+
+  .inspector-sidebar {
+    width: 100%;
+  }
+
+  .inspector-sidebar.collapsed {
+    width: 100%;
+    transform: translateX(100%);
   }
 }
 

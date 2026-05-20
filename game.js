@@ -759,7 +759,7 @@ function getModeName(mode) {
   return 'Sandbox';
 }
 
-// Automatically fits the game board grid inside the viewport height & width while maintaining card proportions
+// Automatically fits the game board grid inside the viewport height & width while maintaining card proportions and accounting for grid gaps
 function resizeGameBoard() {
   if (!gameBoard) return;
   const container = gameBoard.parentElement;
@@ -778,22 +778,27 @@ function resizeGameBoard() {
     rows = 6; cols = 6;
   }
 
-  // Calculate the target aspect ratio of the grid
-  // Individual cards are 4:5 aspect ratio
-  const gridWidthRatio = cols * 4;
-  const gridHeightRatio = rows * 5;
-  const gridAspect = gridWidthRatio / gridHeightRatio;
+  const gap = 10; // Must match the CSS gap on .game-board
+  const cardAspect = 4 / 5; // card width / card height
 
-  let finalWidth, finalHeight;
-  if (containerWidth / containerHeight > gridAspect) {
-    // Height is the limiting factor
-    finalHeight = containerHeight;
-    finalWidth = containerHeight * gridAspect;
-  } else {
-    // Width is the limiting factor
-    finalWidth = containerWidth;
-    finalHeight = containerWidth / gridAspect;
-  }
+  // Calculate maximum card width based on width constraint
+  // cols * cardWidth + (cols - 1) * gap <= containerWidth
+  const maxCardWidthByWidth = (containerWidth - (cols - 1) * gap) / cols;
+
+  // Calculate maximum card width based on height constraint
+  // rows * cardHeight + (rows - 1) * gap <= containerHeight
+  // Since cardHeight = cardWidth / cardAspect, we have:
+  // rows * (cardWidth / cardAspect) + (rows - 1) * gap <= containerHeight
+  // cardWidth <= (containerHeight - (rows - 1) * gap) * cardAspect / rows
+  const maxCardWidthByHeight = ((containerHeight - (rows - 1) * gap) * cardAspect) / rows;
+
+  // Take the minimum of the two to ensure it fits in both dimensions
+  const cardWidth = Math.min(maxCardWidthByWidth, maxCardWidthByHeight);
+  const cardHeight = cardWidth / cardAspect;
+
+  // Compute final grid dimensions
+  const finalWidth = cols * cardWidth + (cols - 1) * gap;
+  const finalHeight = rows * cardHeight + (rows - 1) * gap;
 
   // Apply visual sizing variables to the DOM element
   gameBoard.style.width = `${Math.floor(finalWidth)}px`;
@@ -804,7 +809,7 @@ function resizeGameBoard() {
     inspector.logEvent(
       'UI: resize',
       `Grid resized to ${Math.floor(finalWidth)}px x ${Math.floor(finalHeight)}px`,
-      `Fitted grid (${gameState.grid}) inside viewport. Card sizes adjusted to preserve aspect ratios.`
+      `Fitted grid (${gameState.grid}) inside viewport. Card sizes adjusted to preserve aspect ratios and account for gaps.`
     );
   }
 }
